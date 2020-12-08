@@ -112,7 +112,7 @@ class servoController:
 
     def _setPosition(self,tiltAngle,panAngle):
         # conversion degree/0.08789
-        print(tiltAngle,panAngle)
+        # print(tiltAngle,panAngle)
         self.dynamixel.write2ByteTxRx(self.portHandler, DXL_ID_tilt, ADDR_MX_GOAL_POSITION, (int)(tiltAngle/0.08789))
         self.dynamixel.write2ByteTxRx(self.portHandler, DXL_ID_pan, ADDR_MX_GOAL_POSITION, (int)(panAngle/0.08789))
 
