@@ -4,7 +4,13 @@ This is the standalone version of the TRINA controller. It uses default WebSocke
 
 ## Contents
 
-[TOC]
+- [TRINA HEAD CONTROLLER](#trina-head-controller)
+  - [Contents](#contents)
+  - [Code Outline](#code-outline)
+  - [Hardware Setup](#hardware-setup)
+  - [Software Setup](#software-setup)
+  - [Usage](#usage)
+  - [Demo](#demo)
 
 ## Code Outline
 **WebSocket.py**
