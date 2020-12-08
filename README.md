@@ -34,7 +34,7 @@ To set up the hardware, simply connect the U2D2 chip to the computer(Windows/Lin
 
 After, connect the U2D2 chip to power using the power adaptor included.
 
-To get the cameras' images, connect both cameras to the computer using 2 USB Type-C cables. One extra cable is provided for each type.
+To get the cameras' images, connect both cameras to the computer using one USB Type-C cable and one micro USB cable. 
 
 
 ## Software Setup
