@@ -29,7 +29,6 @@ def on_message(ws, message):
     global userId,roomId,drone,roomname, zonename
     global is_closed
     global servoController
-    print "Received ::::::: '%s'" % message
     mjson = json.loads(message)
     if mjson["a"]==0:
        a= {"a":1,"c":0,"p":{"zn": zonename,"un":"","pw":""}}
@@ -38,7 +37,7 @@ def on_message(ws, message):
 
     if mjson["a"]==1:
        if 'id' in mjson["p"]:
-           print "userId: %d" % mjson["p"]["id"]
+           print ("userId: %d" % mjson["p"]["id"])
            userId = mjson["p"]["id"]
            a={"a":4,"c":0,"p":{"n":roomname}}
            b= json.dumps(a).encode('utf-8')
@@ -47,19 +46,19 @@ def on_message(ws, message):
     if mjson["a"]==1001: #Once after room jon sending welcome message
        if roomId ==-1:
            roomId = mjson["p"]["r"]
-           print "Room id :::: '%s'" % roomId
+           print ("Room id :::: '%s'" % roomId)
         
            #sending public messages  
-	   a={"a":7,"c":0,"p":{"t":0,"r":roomId,"u":userId,"m":"controllers","p":{"LeftRotation":{"x":0.1,"y":0.2,"z":0.3},"LeftPosition":{"x":1.1,"y":1.2,"z":1.3},"RightRotation":{"x":2.1,"y":2.2,"z":2.3},"RightPosition":{"x":3.1,"y":3.2,"z":3.3}}}}
+           a={"a":7,"c":0,"p":{"t":0,"r":roomId,"u":userId,"m":"controllers","p":{"LeftRotation":{"x":0.1,"y":0.2,"z":0.3},"LeftPosition":{"x":1.1,"y":1.2,"z":1.3},"RightRotation":{"x":2.1,"y":2.2,"z":2.3},"RightPosition":{"x":3.1,"y":3.2,"z":3.3}}}}
            b= json.dumps(a).encode('utf-8')
            ws.send(b)
 
                                            
     if mjson["a"]==7:  #Retrieve public message
        if mjson["p"]["m"]=="controllers" and mjson["p"]["r"]==roomId:
-        #    print("LeftRotation x:(%s) y:(%s) z:(%s)" %(mjson["p"]["p"]["LeftRotation"]["x"],mjson["p"]["p"]["LeftRotation"]["y"],mjson["p"]["p"]["LeftRotation"]["z"]))
-        orientation = to_rotvec(mjson["p"]["p"]["headSetPositionState"]["deviceRotation"])
-        servoController.setGoal(orientation)
+          orientation = to_rotvec(mjson["p"]["p"]["headSetPositionState"]["deviceRotation"])
+          print(orientation)
+          servoController.setGoal(orientation)
 
 
           
@@ -72,6 +71,8 @@ def on_error(ws, error):
 
 def on_close(ws):
     global is_closed
+    global servoController
+    servoController.shutdown()
     is_closed=1
     print("### closed ###")
 
@@ -79,12 +80,10 @@ def on_close(ws):
 def on_open(ws):
     def run(*args):
         global is_closed
-        global servoController
         a = {"a":0,"c":0,"p":{"api":"1.2.0","cl":"JavaScript"}}
         b =json.dumps(a).encode('utf-8')
         print(b)
         ws.send(b)
-        servoController = servoController()
 
         while is_closed==0:
               time.sleep(1)
@@ -98,6 +97,8 @@ def on_open(ws):
 
 
 if __name__ == "__main__":
+    global servoController
+    servoController = servoController()
     websocket.enableTrace(True)
     host = "ws://gametest.vrotors.com:8888/websocket"
     ws = websocket.WebSocketApp(host,

@@ -43,13 +43,14 @@ A list of Python libraries should be installed before running the script. They a
 1. scipy
 2. numpy
 3. dynamixel_sdk
-4. serial (for dynamicel_sdk internal usage, some installation comes with this built-in)
-5. WebSocket(using the version aligned with the VR headset)
-6. pandas(only for plotting the sin waves)
+4. threading
+5. serial (for dynamicel_sdk internal usage, some installation comes with this built-in)
+6. WebSocket(using the version aligned with the VR headset)
+7. pandas(only for plotting the sin waves)
 
 All of the libraries except for WebSocket is using the most updated version, so a simple pip install should get the job done :)
 
-The only code one should modify to control the motors is line 39 of **servoController.py**. This line specifies which communication port is used. On a Windows machine, once the U2D2 chip is connected, one could find the COM port under the device manager.(Default 'COM1'). On Linux, the default is '/dev/ttyUSB0'. One can open the terminal and type: `ls /dev/tty*` to find more details.
+The only code one should modify to control the motors is line 39 of **servoController.py**. This line specifies which communication port is used. On a Windows machine, once the U2D2 chip is connected, one could find the COM port under the device manager.(Default 'COM1'). On Linux, the default is '/dev/ttyUSB0'. One can open the terminal and type: `ls /dev/tty*` to find more details. There might be permission issues acoording to the system. Usually `sudo chmod a+rw /dev/ttyUSB0` will fix that.
 
 
 
@@ -57,11 +58,12 @@ The only code one should modify to control the motors is line 39 of **servoContr
 Once both setups are ready. Follow the below instructions to test the system:
 
 1. turn on the U2D2 chip power switch
-2. run `python WebSocket.py `
-3. open the VR app, this would automatically connect to the WebSocket server, once connected, a servoController is instantiated and one should see the head moving to the initialized state and stay there. This state resembles a front looking and upright positioned human head.
+2. run `python WebSocket.py `, once started, a servoController is instantiated and one should see the head moving to the initialized state and stay there. This state resembles a front looking and upright positioned human head.
+3. open the VR app, this would automatically connect to the WebSocket server.
 4. start moving the VR headset around to see the head robot following the human movement.
 5. to read the current angle/state of the head motors, call `servoController.reportServoState()` inside the websocket events from **WebSocket.py**.
-6. To test the head controller without using the VR headset. run `python servoController.py `. This emulates a Sin wave and moves the head according to the sinusoidal input.
+6. to change the motor spped, refer to line 94 and 95 of **servoController.py**, the speed range: 0~1023 (0X3FF) can be used, and the unit is about 0.111rpm. During our testing, a speed between 300-500 has the best performance.
+6. to test the head controller without using the VR headset. run `python servoController.py `. This emulates a Sin wave and moves the head according to the sinusoidal input.
 
 
 ## Demo

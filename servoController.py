@@ -3,6 +3,8 @@ import os
 import time
 import numpy as np                   # for multi-dimensional containers
 import pandas as pd                  # for DataFrames
+from threading import Thread, Lock, RLock
+import threading
 if os.name == 'nt':
     import msvcrt
     def getch():
@@ -58,9 +60,13 @@ class servoController:
 
         self.panLimits = {"center": 180, "min":90, "max":270}
         self.tiltLimits = {"center": 180, "min":130, "max":230}
+        
+        self.tiltAngle = self.tiltLimits["center"]
+        self.panAngle = self.panLimits["center"]
 
-
-        self.servoStretching = 0.7
+        self.dt = 0.02 
+        self.exit = False
+        self._controlLoopLock = RLock()
 
 
         # dynamicel init
@@ -85,14 +91,30 @@ class servoController:
             quit()
 
         #SPEED
-        self.dynamixel.write2ByteTxRx(self.portHandler, DXL_ID_tilt, ADDR_MX_MOVING_SPEED, (int)(50))
-        self.dynamixel.write2ByteTxRx(self.portHandler, DXL_ID_pan, ADDR_MX_MOVING_SPEED, (int)(50))
+        self.dynamixel.write2ByteTxRx(self.portHandler, DXL_ID_tilt, ADDR_MX_MOVING_SPEED, (int)(350))
+        self.dynamixel.write2ByteTxRx(self.portHandler, DXL_ID_pan, ADDR_MX_MOVING_SPEED, (int)(350))
         # init position
         # self.ser.write(f'g,{68},{68}'.encode())
-        self.dynamixel.write2ByteTxRx(self.portHandler, DXL_ID_tilt, ADDR_MX_GOAL_POSITION, (int)(self.tiltLimits["center"]/0.08789))
-        self.dynamixel.write2ByteTxRx(self.portHandler, DXL_ID_pan, ADDR_MX_GOAL_POSITION, (int)(self.panLimits["center"]/0.08789))
 
-  
+        time.sleep(0.5)
+        controlThread = threading.Thread(target = self._controlLoop)
+        controlThread.start()
+
+    def _controlLoop(self):
+
+        while not self.exit:
+            ##update the state
+            self._controlLoopLock.acquire()
+            self._setPosition(self.tiltAngle,self.panAngle)
+            self._controlLoopLock.release()
+            time.sleep(self.dt)
+        print("Head Controller: control loop exited")
+
+    def _setPosition(self,tiltAngle,panAngle):
+        # conversion degree/0.08789
+        print(tiltAngle,panAngle)
+        self.dynamixel.write2ByteTxRx(self.portHandler, DXL_ID_tilt, ADDR_MX_GOAL_POSITION, (int)(tiltAngle/0.08789))
+        self.dynamixel.write2ByteTxRx(self.portHandler, DXL_ID_pan, ADDR_MX_GOAL_POSITION, (int)(panAngle/0.08789))
 
 
     def reportServoState(self):
@@ -129,21 +151,20 @@ class servoController:
         self.goalOrientation["x"] = orientation["x"]
         self.goalOrientation["y"] = orientation["y"]
 
-        panAngle = limitTo((self.panLimits["center"] - mod180(self.goalOrientation["y"] - self.startOrientation["y"])), self.panLimits["min"], self.panLimits["max"])
-        tiltAngle = limitTo((self.tiltLimits["center"] + mod180(self.goalOrientation["x"] - self.startOrientation["x"])), self.tiltLimits["min"], self.tiltLimits["max"])
-        # print(("moving ",panAngle,tiltAngle))
-        # print(("startiing ",self.startOrientation["y"],self.startOrientation["x"]))
+        self.panAngle = limitTo((self.panLimits["center"] - mod180(self.goalOrientation["y"] - self.startOrientation["y"])), self.panLimits["min"], self.panLimits["max"])
+        self.tiltAngle = limitTo((self.tiltLimits["center"] - mod180(self.goalOrientation["x"] - self.startOrientation["x"])), self.tiltLimits["min"], self.tiltLimits["max"])
 
-        # conversion degree/0.08789
-        self.dynamixel.write2ByteTxRx(self.portHandler, DXL_ID_tilt, ADDR_MX_GOAL_POSITION, (int)(tiltAngle/0.08789))
-        self.dynamixel.write2ByteTxRx(self.portHandler, DXL_ID_pan, ADDR_MX_GOAL_POSITION, (int)(panAngle/0.08789))
-        # self.reportServoState()
+    def shutdown(self):
+        self.exit = True
+       
 
 
 if __name__ == "__main__":
     try:
         a = servoController()
         a.reportServoState()
+        # shuts down control loop, use pure low level command in the emulation
+        a.shutdown()
         # sending the head sin waves in real timne
         sample_rate = 50
         sin_time = np.arange(0, 10, 1/sample_rate)
@@ -159,15 +180,16 @@ if __name__ == "__main__":
         for position in sinewave:
             time_before = time.time()
             tilt_position = position * (a.tiltLimits["max"] - a.tiltLimits["center"]) + a.tiltLimits["center"]
-            print("tilt_position", tilt_position)
+            # print("tilt_position", tilt_position)
             # a.reportServoState()
-            print("***********************************************************************")
+            # print("***********************************************************************")
             a.dynamixel.write2ByteTxRx(a.portHandler, DXL_ID_tilt, ADDR_MX_GOAL_POSITION, (int)(tilt_position/0.08789))
+
         
 
             while (time.time() - time_before) < period:
-                print(time.time() - time_before)
                 time.sleep(0.001)  # precision here
+
         for position in sinewave:
             time_before = time.time()
             pan_position = position * (a.panLimits["max"] - a.panLimits["center"]) + a.panLimits["center"]
@@ -176,9 +198,10 @@ if __name__ == "__main__":
             # print("***********************************************************************")
             a.dynamixel.write2ByteTxRx(a.portHandler, DXL_ID_pan, ADDR_MX_GOAL_POSITION, (int)(pan_position/0.08789))
             while (time.time() - time_before) < period:
-                print(time.time() - time_before)
                 time.sleep(0.001)  # precision here
+       
     except KeyboardInterrupt:
+        a.shutdown()
         pass
           
 
