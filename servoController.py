@@ -122,7 +122,8 @@ class servoController:
         dxl_present_position_tlit, dxl_comm_result, dxl_error = self.dynamixel.read2ByteTxRx(self.portHandler, DXL_ID_tilt, ADDR_MX_PRESENT_POSITION)
         dxl_present_position_pan, dxl_comm_result, dxl_error = self.dynamixel.read2ByteTxRx(self.portHandler, DXL_ID_pan, ADDR_MX_PRESENT_POSITION)
         print('dxl_present_position_tlit', dxl_present_position_tlit*0.08789, 'dxl_present_position_pan',dxl_present_position_pan*0.08789)
-    
+        return(dxl_present_position_tlit*0.08789,dxl_present_position_pan*0.08789)
+        
     def initialize(self,orientation):
         self.startOrientation["x"] = orientation["x"]
         self.startOrientation["y"] = orientation["y"]

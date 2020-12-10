@@ -50,7 +50,7 @@ A list of Python libraries should be installed before running the script. They a
 
 All of the libraries except for WebSocket is using the most updated version, so a simple pip install should get the job done :)
 
-The only code one should modify to control the motors is line 39 of **servoController.py**. This line specifies which communication port is used. On a Windows machine, once the U2D2 chip is connected, one could find the COM port under the device manager.(Default 'COM1'). On Linux, the default is '/dev/ttyUSB0'. One can open the terminal and type: `ls /dev/tty*` to find more details. There might be permission issues acoording to the system. Usually `sudo chmod a+rw /dev/ttyUSB0` will fix that.
+The only code one should modify to control the motors is line 41 of **servoController.py**. This line specifies which communication port is used. On a Windows machine, once the U2D2 chip is connected, one could find the COM port under the device manager.(Default 'COM1'). On Linux, the default is '/dev/ttyUSB0'. One can open the terminal and type: `ls /dev/tty*` to find more details. There might be permission issues acoording to the system. Usually `sudo chmod a+rw /dev/ttyUSB0` will fix that.
 
 
 
