@@ -19,6 +19,9 @@ This file creates a WebSocket server and waits for the client(the VR headset) to
 **servoController.py**
 This file implements the embedded code to control the head motors. It limits the motor motion to resemble a human head movement. A worth noting function:`reportServoState()`, when called, returns the motor angles in degrees`(tilt degree, pan degree)`. When executing the file alone, it emulates a Sin wave and moves the head motors according to the sinusoidal input.
 
+**servoControllerTest**
+This jupyter notebook gives an interface to control the motors directly.
+
 ## Hardware Setup 
 Below are the lists of hardware that are included in the package.
 1. Dynamixel Motor for tilt/pitch. ID: 1
